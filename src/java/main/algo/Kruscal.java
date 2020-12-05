@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Kruscal {
-    static final int INF = Integer.MAX_VALUE;
     static final String inputFile = "input.txt";
     static final String outputFile = "output.txt";
 
