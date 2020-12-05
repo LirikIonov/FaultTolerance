@@ -11,7 +11,7 @@ public class Graph {
     public List<Pair<Integer, Pair<Integer, Integer>>> edges = new ArrayList<>();
     public List<List<Pair<Integer, Integer>>> g = new ArrayList<>();
     public int[][] dd;
-    public int[] d;
+    public int[] d, degree;
     public int n, m;
 
     public Graph(int n, int m) {
@@ -19,6 +19,7 @@ public class Graph {
         this.m = m;
         dd = new int[n][n];
         d = new int[n];
+        degree = new int[n];
 
         for (int i = 0; i < n; i++) {
             g.add(new ArrayList<>());
@@ -39,6 +40,9 @@ public class Graph {
         g.get(w).add(new Pair(v, c));
         dd[w][v] = c;
         edges.add(new Pair<>(w, new Pair<>(v, c)));
+
+        degree[v]++;
+        degree[w]++;
     }
 
     public List<Pair<Integer, Integer>> getAdjacentEdges(int v) {
