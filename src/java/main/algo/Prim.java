@@ -1,6 +1,6 @@
 package algo;
 
-import graph.Graph;
+import graph.DrawGraph;
 import utils.Pair;
 
 import java.io.File;
@@ -21,7 +21,7 @@ public class Prim {
         Scanner in = new Scanner(new File(inputFile));
         int n = in.nextInt();
         int m = in.nextInt();
-        Graph g = new Graph(n, m);
+        DrawGraph g = new DrawGraph(n, m);
 
         for (int i = 0; i < m; i++) {
             int v = in.nextInt() - 1;
@@ -33,7 +33,7 @@ public class Prim {
         solve(g);
     }
 
-    void solve(Graph g) throws FileNotFoundException {
+    void solve(DrawGraph g) throws FileNotFoundException {
         int[] minEdge = new int[g.n];
         int[] selEdge = new int[g.n];
         boolean[] used = new boolean[g.n];

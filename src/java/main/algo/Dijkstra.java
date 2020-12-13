@@ -1,6 +1,6 @@
 package algo;
 
-import graph.Graph;
+import graph.DrawGraph;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +19,7 @@ public class Dijkstra {
         Scanner in = new Scanner(new File(inputFile));
         int n = in.nextInt();
         int m = in.nextInt();
-        Graph g = new Graph(n, m);
+        DrawGraph g = new DrawGraph(n, m);
 
         for (int i = 0; i < m; i++) {
             int v = in.nextInt() - 1;
@@ -31,7 +31,7 @@ public class Dijkstra {
         solve(g);
     }
 
-    void solve(Graph g) throws FileNotFoundException {
+    void solve(DrawGraph g) throws FileNotFoundException {
         int[] d = g.d;
         Queue<Integer> q = new PriorityQueue<>();
         d[0] = 0;
