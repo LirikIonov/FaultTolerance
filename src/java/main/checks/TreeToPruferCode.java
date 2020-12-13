@@ -1,6 +1,6 @@
 package checks;
 
-import graph.Graph;
+import graph.DrawGraph;
 import utils.Pair;
 
 import java.io.File;
@@ -18,7 +18,7 @@ public class TreeToPruferCode {
         Scanner in = new Scanner(new File(inputFile));
         int n = in.nextInt();
         int m = in.nextInt();
-        Graph g = new Graph(n, m);
+        DrawGraph g = new DrawGraph(n, m);
 
         for (int i = 0; i < m; i++) {
             int v = in.nextInt() - 1;
@@ -29,7 +29,7 @@ public class TreeToPruferCode {
         solve(g);
     }
 
-    public void solve(Graph g) throws FileNotFoundException {
+    public void solve(DrawGraph g) throws FileNotFoundException {
         int n = g.n;
         TreeSet<Integer> leafs = new TreeSet<>();
         int[] degree = g.degree;
@@ -58,13 +58,19 @@ public class TreeToPruferCode {
                 leafs.add(adjToLeaf);
             }
         }
-
         write(s.toString());
     }
 
     public void write(String s) throws FileNotFoundException {
         PrintWriter out = new PrintWriter(new FileOutputStream(outputFile), true);
-        out.println(s);
+        out.print("(");
+        for (int i = 0, len = s.length(); i < len; i++) {
+            out.print(s.charAt(i));
+            if (i != s.length() - 1) {
+                out.print(",");
+            }
+        }
+        out.println(")");
         out.close();
     }
 

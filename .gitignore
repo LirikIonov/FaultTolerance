@@ -1,5 +1,6 @@
 .idea/
 *.iml
 *.txt
-out/
 gen/
+out/
+target/

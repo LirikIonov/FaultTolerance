@@ -19,4 +19,21 @@ public class Pair<F extends Comparable<F>, S extends Comparable<S>> implements C
 		}
 		return second.compareTo(o.second);
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		Pair<?,?> p = (Pair<?, ?>) o;
+		if (this == p) {
+			return true;
+		}
+		if (!this.first.equals(p.first)) {
+			return first.equals(p.first);
+		}
+		return second.equals(p.second);
+	}
+
+	@Override
+	public String toString() {
+		return "(" + this.first + "," + this.second + ")";
+	}
 }

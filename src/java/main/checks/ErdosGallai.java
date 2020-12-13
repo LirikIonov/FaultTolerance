@@ -1,40 +1,94 @@
 package checks;
 
-import java.util.Arrays;
-import java.util.Collections;
+import graph.DrawGraph;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class ErdosGallai {
-    int[] d = {4,4,3,3,2,2,1,1};
+    static final String inputFile = "input.txt";
+    static final String outputFile = "output.txt";
 
-    boolean check() {
-        d = Arrays.stream(d)
-                .boxed()
-                .sorted(Collections.reverseOrder())
-                .mapToInt(Integer::intValue)
-                .toArray();
+    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.');
+
+    boolean check(List<Integer> d) {
+        d.sort(Collections.reverseOrder());
+        System.out.println(d);
         long dSum = 0;
 
-        for (int k = 0, n = d.length; k < n; k++) {
+        for (int k = 1, n = d.size(); k <= n; k++) {
             long kMult = (long) k * (k - 1);
             long kSum = 0;
-            for (int j = k + 1; j < n; j++) {
-                kSum += Math.min(j, d[j]);
+            for (int j = k; j < n; j++) {
+                kSum += Math.min(j, d.get(j));
             }
 
-            dSum += d[k];
+            dSum += d.get(k - 1);
             if (dSum > kMult + kSum) {
+                System.out.println(k + ": " + dSum + " > " + kMult + " + " + kSum);
+                System.out.println("Вектор не является графичным\n");
                 return false;
             }
+            System.out.println(k + ": " + dSum + " <= " + kMult + " + " + kSum);
         }
 
-        return dSum % 2 == 0;
+        if (dSum % 2 == 0) {
+            System.out.println("Вектор графичен\n");
+            return true;
+        }
+        else {
+            System.out.println("Вектор не является графичным\n");
+            return false;
+        }
     }
 
-    void solveAndPrint() {
-        System.out.println(check() ? "YES" : "NO");
+    void solveAndPrint() throws FileNotFoundException {
+        Scanner in = new Scanner(new File(inputFile));
+        PrintWriter out = new PrintWriter(new FileOutputStream(outputFile), true);
+        int times = 1;
+
+        while(in.hasNextLine()) {
+            String vec = in.nextLine();
+            List<Integer> d = new ArrayList<>();
+            int start = 0;
+            if (vec.contains(".")) {
+                start = vec.lastIndexOf('.') + 1;
+            }
+
+            for (int len = vec.length(); start < len; start++) {
+                char c = vec.charAt(start);
+                if (!notDigits.contains(c)) {
+                    int num = Character.getNumericValue(c);
+                    d.add(num);
+                }
+            }
+
+            boolean res = check(d);
+            String verdict = " — " + (res ? "графичный. " : "не является графичным. ");
+            out.print(times++ + ". " + vectorToStr(d) + verdict);
+            if (check(d)) {
+                printMaybeHamiltonianpath(d, out);
+            }
+            out.println();
+        }
+        out.close();
     }
 
-    public static void main(String[] args) {
+    private void printMaybeHamiltonianpath(List<Integer> d, PrintWriter out) {
+        int n = d.size();
+        DrawGraph graph = new DrawGraph(n, n - 1);
+        graph.buildGraphFromSequence(d, out);
+        graph.drawWithDegrees();
+    }
+
+    private String vectorToStr(List<Integer> vec) {
+        return vec.toString().replace("[", "(").replace("]", ")");
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
         new ErdosGallai().solveAndPrint();
     }
 }
