@@ -18,7 +18,7 @@ public class DrawGraph {
     public List<List<Pair<Integer, Integer>>> g = new ArrayList<>();
     public List<Integer> centralVertices = new ArrayList<>();
     public int[][] dd;
-    public int[] d, degree, e;
+    public int[] d, degree, e, p;
     public boolean[] used;
     public int diameter = -INF;
     public int radius = INF;
@@ -33,6 +33,7 @@ public class DrawGraph {
         g.get(v).add(new Pair<>(w, c));
         dd[v][w] = c;
         edges.add(new Pair<>(v, new Pair<>(w, c)));
+        p[w] = v;
 
         g.get(w).add(new Pair<>(v, c));
         dd[w][v] = c;
@@ -43,8 +44,23 @@ public class DrawGraph {
         graph.addEdge(String.valueOf(edgeNumber++), String.valueOf(v + 1), String.valueOf(w + 1));
     }
 
+    public void addVisualEdge(int v, int w) {
+        String e = String.valueOf(edgeNumber++);
+        graph.addEdge(e, String.valueOf(v + 1), String.valueOf(w + 1));
+        var edge = graph.getEdge(e);
+        edge.setAttribute("ui.style", getNewEdgeStyle());
+    }
+
     public void addVertex(int v) {
         graph.addNode(String.valueOf(v));
+    }
+
+    public void addVisualVertex(int v) {
+        String vv = String.valueOf(v);
+        graph.addNode(vv);
+        var node = graph.getNode(vv);
+        node.setAttribute("ui.label", node.getId());
+        node.setAttribute("ui.style", getNewVertexStyle());
     }
 
     public void buildGraphFromSequence(List<Integer> d, PrintWriter out) {
@@ -56,14 +72,13 @@ public class DrawGraph {
 
         try {
             tryToBuildHamiltonianPath(vec);
-        }
-        catch (Exception e) {
-            out.println("Не получилось построить граф с гамильтоновым путем, строим как получится.");
+        } catch (Exception e) {
+            out.println("Строим граф другим образом...");
             buildGraphInCommonWay(dp);
         }
     }
 
-    public void calcEccenticity() {
+    public void calcEccentricity() {
         floyd();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -82,6 +97,22 @@ public class DrawGraph {
                 centralVertices.add(i);
             }
         }
+    }
+
+    @Override
+    public DrawGraph clone() {
+        DrawGraph cloned = new DrawGraph(n, m);
+        boolean[][] uu = new boolean[n][n];
+        for (var edge : edges) {
+            int v = edge.first;
+            int w = edge.second.first;
+            int c = edge.second.second;
+            if (!uu[v][w] && !uu[w][v]) {
+                cloned.addEdge(v, w, c);
+                uu[v][w] = uu[w][v] = true;
+            }
+        }
+        return cloned;
     }
 
     public void draw() {
@@ -114,23 +145,23 @@ public class DrawGraph {
             int sizeW = treeW.getSize();
 
             if (sizeV < sizeW) {
-                out.print("В поддереве с корнем v = " + v + " меньше вершин " +
+                out.print("В поддереве с корнем v = " + (v + 1) + " меньше вершин " +
                         "(" + sizeV + "<" + sizeW + "), поэтому выберем его корнем.\n");
                 c = v;
             } else if (sizeW < sizeV) {
-                out.print("В поддереве с корнем w = " + w + " меньше вершин " +
+                out.print("В поддереве с корнем w = " + (w + 1) + " меньше вершин " +
                         "(" + sizeW + "<" + sizeV + "), поэтому выберем его корнем.\n");
                 c = w;
             } else {
                 var pathV = formPathForMainCanonicalCode(treeV, v, new ArrayList<>());
                 var pathW = formPathForMainCanonicalCode(treeW, w, new ArrayList<>());
                 if (comparePaths(pathV, pathW) == 1) {
-                    out.println("Канонический код дерева с центром в v = " + v +
+                    out.println("Канонический код дерева с центром в v = " + (v + 1) +
                             " предшествует аналогичному в w = " + w + ", ");
                     out.println(pathV + " < " + pathW);
                     c = v;
                 } else {
-                    out.println("Канонический код дерева с центром в w = " + w +
+                    out.println("Канонический код дерева с центром в w = " + (w + 1) +
                             " не превосходит аналогичный в v = " + v + ", ");
                     out.println(pathW + " <= " + pathV);
                     c = w;
@@ -179,8 +210,8 @@ public class DrawGraph {
         }
 
         StringBuilder res = new StringBuilder();
-        res.append("Кандидаты на автоморфные вершины: {").append(setOfPairsToStr(foundVertices)).append("}\n");
-        res.append("Кандидаты на автоморфные ребра: {").append(setOfStrsToStr(foundEdges)).append("}\n");
+        res.append("Кандидаты на подобные вершины: {").append(setOfPairsToStr(foundVertices)).append("}\n");
+        res.append("Кандидаты на подобные ребра: {").append(setOfStrsToStr(foundEdges)).append("}\n");
 
         return res.toString();
     }
@@ -198,6 +229,114 @@ public class DrawGraph {
         }
         path.add(dd[root][subTree.getKey()] + 1);
         return path;
+    }
+
+    public boolean isAdjacent(int v, int w) {
+        return g.get(v).contains(w) || g.get(w).contains(v);
+    }
+
+    public void minimalEdgeExpansion(PrintWriter out) {
+        int minDegree = INF, maxDegree = -INF;
+        for (int i = 0; i < n; i++) {
+            minDegree = Math.min(minDegree, degree[i]);
+            maxDegree = Math.max(maxDegree, degree[i]);
+        }
+        List<Integer> minDegVertices = new ArrayList<>();
+        int countMax = 0;
+        for (int i = 0; i < n; i++) {
+            if (degree[i] == minDegree) {
+                minDegVertices.add(i);
+            }
+            if (degree[i] == maxDegree) {
+                countMax++;
+            }
+        }
+
+        if (countMax == n) {
+            out.println("Граф полный. Построить реберное расширение нельзя.");
+            return;
+        }
+
+        List<Pair<Integer, Integer>> edges = new ArrayList<>();
+        int countMin = minDegVertices.size();
+        boolean[] uu = new boolean[n];
+        for (int i = 0; i < countMin; i++) {
+            int v = minDegVertices.get(i);
+            if (uu[v]) {
+                continue;
+            }
+            int w = -1;
+
+            for (int j = 0; j < countMin; j++) {
+                int ww = minDegVertices.get(j);
+                if (i != j && !isAdjacent(v, ww) && !uu[v] && !uu[ww]) {
+                    w = ww;
+                    uu[v] = true;
+                    uu[w] = true;
+                    break;
+                }
+            }
+
+            if (w == -1) {
+                for (int j = 0; j < n; j++) {
+                    if (v != j && !isAdjacent(v, j)) {
+                        w = j;
+                        break;
+                    }
+                }
+            }
+
+            edges.add(new Pair<>(v, w));
+        }
+
+        int edgesShouldBeAdded = edges.size();
+        out.println("В данном графе " + countMin + " вершин с минимальной степенью = " + minDegree + ". " +
+                "Минимальное реберное расширение потребовало добавления " + edgesShouldBeAdded + " ребер.");
+
+        for (var pair : edges) {
+            addVisualEdge(pair.first, pair.second);
+            out.println((pair.first + 1) + " " + (pair.second + 1));
+        }
+    }
+
+    public void minimalVertexExpansion(PrintWriter out) {
+        int minDegree = INF, maxDegree = -INF;
+        for (int i = 0; i < n; i++) {
+            minDegree = Math.min(minDegree, degree[i]);
+            maxDegree = Math.max(maxDegree, degree[i]);
+        }
+        List<Integer> minDegVertices = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (degree[i] == minDegree) {
+                minDegVertices.add(i);
+            }
+        }
+
+        int countMin = minDegVertices.size();
+        int edgesCount = Math.max(countMin, maxDegree);
+        out.println("В данном графе " + countMin + " вершин с минимальной степенью = " + minDegree +
+                " и максимальная степень = " + maxDegree + ".");
+        out.println("Минимальное вершинное расширение потребует добавления " + edgesCount + " ребер.");
+
+        int w = n;
+        addVisualVertex(w + 1);
+        used = new boolean[n];
+        for (int i = 0; i < countMin; i++) {
+            int v = minDegVertices.get(i);
+            used[v] = true;
+            addVisualEdge(v, w);
+            out.println((v + 1) + " " + (w + 1));
+        }
+
+        if (countMin < edgesCount) {
+            for (int i = 0; i < n; i++) {
+                if (!used[i]) {
+                    used[i] = true;
+                    addVisualEdge(i, w);
+                    out.println((i + 1) + " " + (i + 1));
+                }
+            }
+        }
     }
 
     private boolean areAllPairsAreZero(List<Pair<Integer, Integer>> dp) {
@@ -219,7 +358,7 @@ public class DrawGraph {
     }
 
     private void buildGraphInCommonWay(List<Pair<Integer, Integer>> dp) {
-        System.out.println("\nСтроим как получится...");
+        System.out.println("\nСтроим другим образом...");
         initFrontEnd();
         int v, x;
 
@@ -233,6 +372,7 @@ public class DrawGraph {
             }
             deleteElementFromSequencePair(dp, dp.get(v), v);
         }
+        System.out.println();
     }
 
     private int comparePaths(List<Integer> path1, List<Integer> path2) {
@@ -336,6 +476,17 @@ public class DrawGraph {
         }
     }
 
+    private String getNewEdgeStyle() {
+        return "fill-color: red;";
+    }
+
+    private String getNewVertexStyle() {
+        return "fill-color: red; " +
+                "size: 20px; " +
+                "text-alignment: under; " +
+                "text-size: 20px;";
+    }
+
     private String getStyle() {
         return "fill-color: blue; " +
                 "size: 20px; " +
@@ -351,6 +502,7 @@ public class DrawGraph {
         d = new int[n];
         e = new int[n];
         degree = new int[n];
+        p = new int[n];
         used = new boolean[n];
 
         for (int i = 0; i < n; i++) {
@@ -414,7 +566,11 @@ public class DrawGraph {
         for (Pair<F, S> pair : set) {
             res.append(pair).append(", ");
         }
-        return res.substring(0, res.lastIndexOf(","));
+        if (res.lastIndexOf(",") != -1) {
+            return res.substring(0, res.lastIndexOf(","));
+        } else {
+            return res.toString();
+        }
     }
 
     private String setOfStrsToStr(Set<String> set) {
@@ -422,7 +578,11 @@ public class DrawGraph {
         for (String str : set) {
             res.append(str).append(", ");
         }
-        return res.substring(0, res.lastIndexOf(","));
+        if (res.lastIndexOf(",") != -1) {
+            return res.substring(0, res.lastIndexOf(","));
+        } else {
+            return res.toString();
+        }
     }
 
     private void tryToBuildHamiltonianPath(List<Integer> d) throws Exception {
@@ -437,6 +597,7 @@ public class DrawGraph {
             }
             w = deleteElementFromSequence(d, v, x);
         }
+        System.out.println();
     }
 
     public DrawGraph(int n, int m) {

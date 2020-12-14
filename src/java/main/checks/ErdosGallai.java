@@ -12,7 +12,7 @@ public class ErdosGallai {
     static final String inputFile = "input.txt";
     static final String outputFile = "output.txt";
 
-    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.');
+    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.', '{', '}');
 
     boolean check(List<Integer> d) {
         d.sort(Collections.reverseOrder());
@@ -23,7 +23,7 @@ public class ErdosGallai {
             long kMult = (long) k * (k - 1);
             long kSum = 0;
             for (int j = k; j < n; j++) {
-                kSum += Math.min(j, d.get(j));
+                kSum += Math.min(k, d.get(j));
             }
 
             dSum += d.get(k - 1);
@@ -50,12 +50,16 @@ public class ErdosGallai {
         PrintWriter out = new PrintWriter(new FileOutputStream(outputFile), true);
         int times = 1;
 
-        while(in.hasNextLine()) {
+        while (in.hasNextLine()) {
             String vec = in.nextLine();
+            if (vec.isEmpty()) {
+                continue;
+            }
+
             List<Integer> d = new ArrayList<>();
             int start = 0;
-            if (vec.contains(".")) {
-                start = vec.lastIndexOf('.') + 1;
+            if ((vec.contains(".") && vec.indexOf(".") < vec.length() - 1) || vec.contains("(")) {
+                start = Math.max(vec.indexOf('.'), vec.lastIndexOf("(")) + 1;
             }
 
             for (int len = vec.length(); start < len; start++) {
@@ -69,7 +73,7 @@ public class ErdosGallai {
             boolean res = check(d);
             String verdict = " — " + (res ? "графичный. " : "не является графичным. ");
             out.print(times++ + ". " + vectorToStr(d) + verdict);
-            if (check(d)) {
+            if (res) {
                 printMaybeHamiltonianpath(d, out);
             }
             out.println();

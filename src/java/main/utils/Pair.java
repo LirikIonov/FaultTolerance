@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Objects;
+
 public class Pair<F extends Comparable<F>, S extends Comparable<S>> implements Comparable<Pair<F,S>>
 {
 	public F first;
@@ -30,6 +32,11 @@ public class Pair<F extends Comparable<F>, S extends Comparable<S>> implements C
 			return first.equals(p.first);
 		}
 		return second.equals(p.second);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(first, second);
 	}
 
 	@Override

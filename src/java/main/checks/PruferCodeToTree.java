@@ -12,18 +12,29 @@ public class PruferCodeToTree {
     static final String inputFile = "input.txt";
     static final String outputFile = "output.txt";
 
-    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.');
+    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.', '{', '}');
 
     public void solve() throws FileNotFoundException {
         Scanner in = new Scanner(new File(inputFile));
         String pruferStr = in.nextLine();
-        int len = pruferStr.length();
         List<Integer> prufer = new ArrayList<>();
-        for (int i = 0, n = len; i < n; i++) {
-            char c = pruferStr.charAt(i);
-            if (!notDigits.contains(c)) {
-                prufer.add(c - '0');
+        int start = 0;
+
+        for (int len = pruferStr.length(); start < len; ) {
+            char c = pruferStr.charAt(start);
+            if (notDigits.contains(c)) {
+                ++start;
+                continue;
             }
+
+            String str = "";
+            while (!notDigits.contains(c) && start++ < len) {
+                str += c;
+                if (start < len) {
+                    c = pruferStr.charAt(start);
+                }
+            }
+            prufer.add(Integer.parseInt(str));
         }
 
         int n = prufer.size() + 2;
@@ -58,7 +69,7 @@ public class PruferCodeToTree {
         }
         out.print("\n\n");
         graph.addEdge(a, b);
-        //graph.draw();
+        graph.draw();
 
         printEccentricity(out, graph);
         printCanonicalLevelCode(out, graph);
@@ -68,7 +79,7 @@ public class PruferCodeToTree {
     }
 
     private void printEccentricity(PrintWriter out, DrawGraph graph) {
-        graph.calcEccenticity();
+        graph.calcEccentricity();
         int[] e = graph.e;
         out.println("Эксцентриситеты вершин:");
         for (int i = 0; i < graph.n; i++) {
@@ -90,7 +101,7 @@ public class PruferCodeToTree {
             }
         }
         else {
-            out.print("Центр графа = " + graph.centralVertices.get(0));
+            out.print("Центр графа = {" + (graph.centralVertices.get(0) + 1));
         }
         out.print("}\n\n");
     }

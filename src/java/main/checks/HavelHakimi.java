@@ -12,10 +12,11 @@ public class HavelHakimi {
     static final String inputFile = "input.txt";
     static final String outputFile = "output.txt";
 
-    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.');
+    static final Set<Character> notDigits = Set.of(',', '(', ')', ' ', '.', '{', '}');
 
-    void printVec(List<Integer> d) {
+    void printVec(List<Integer> d, int lineNumber) {
         StringBuilder res = new StringBuilder();
+        res.append(lineNumber + ": ");
         for (int i = 0; i < d.size(); i++) {
             res.append(d.get(i)).append(" ");
         }
@@ -24,9 +25,10 @@ public class HavelHakimi {
 
     boolean check(List<Integer> d) {
         List<Integer> vec = new ArrayList<>(d);
+        int lineNumber = 0;
         while (true) {
             vec.sort(Collections.reverseOrder());
-            printVec(vec);
+            printVec(vec, ++lineNumber);
 
             if (vec.get(0) == 0) {
                 System.out.println("Вектор графичен\n");
@@ -55,10 +57,14 @@ public class HavelHakimi {
 
         while (in.hasNextLine()) {
             String vec = in.nextLine();
+            if (vec.isEmpty()) {
+                continue;
+            }
+
             List<Integer> d = new ArrayList<>();
             int start = 0;
-            if (vec.contains(".")) {
-                start = vec.lastIndexOf('.') + 1;
+            if ((vec.contains(".") && vec.indexOf(".") < vec.length() - 1) || vec.contains("(")) {
+                start = Math.max(vec.indexOf('.'), vec.lastIndexOf("(")) + 1;
             }
 
             for (int len = vec.length(); start < len; start++) {
@@ -73,7 +79,7 @@ public class HavelHakimi {
             boolean res = check(d);
             String verdict = " — " + (res ? "графичный. " : "не является графичным. ");
             out.print(times++ + ". " + vectorToStr(d) + verdict);
-            if (check(d)) {
+            if (res) {
                 printMaybeHamiltonianpath(d, out);
             }
             out.println();

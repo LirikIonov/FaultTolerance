@@ -53,7 +53,7 @@ public class TreeToPruferCode {
                 }
             }
 
-            s.append(adjToLeaf + 1);
+            s.append(adjToLeaf + 1 + " ");
             if (--degree[adjToLeaf] == 1) {
                 leafs.add(adjToLeaf);
             }
@@ -64,9 +64,11 @@ public class TreeToPruferCode {
     public void write(String s) throws FileNotFoundException {
         PrintWriter out = new PrintWriter(new FileOutputStream(outputFile), true);
         out.print("(");
-        for (int i = 0, len = s.length(); i < len; i++) {
-            out.print(s.charAt(i));
-            if (i != s.length() - 1) {
+        String[] split = s.split(" ");
+
+        for (int i = 0, len = split.length; i < len; i++) {
+            out.print(split[i]);
+            if (i != split.length - 1) {
                 out.print(",");
             }
         }
