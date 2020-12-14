@@ -1,3 +1,3 @@
-Requirements:
-Java 11+
-Maven
+Requirements: <br/>
+Java 11+ <br/>
+Maven <br/>
